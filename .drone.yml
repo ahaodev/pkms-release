@@ -6,7 +6,15 @@ steps:
 - name: release-claude-md
   image: hao88/pkms-release:latest
   environment:
-    ACCESS_TOKEN: PKMS-eQgU4p8surNNQ37T
-    RELEASE_URL: http://192.168.99.105:65080/client-access/release
+    ACCESS_TOKEN:
+      from_secret: ACCESS_TOKEN
+    RELEASE_URL:
+      from_secret: RELEASE_URL
   commands:
-  - pkms-release /drone/src/CLAUDE.md ${DRONE_TAG} CLAUDE-Guide markdown universal
+  # Execute PKMS release with the following parameters:
+  # - /drone/src/CLAUDE.md: Source file path (project documentation)
+  # - ${DRONE_TAG}: Version from Drone CI tag (e.g., v1.0.0)
+  # - CLAUDE-Guide: Artifact name for the release system
+  # - markdown: Target OS/platform identifier
+  # - universal: Architecture type (cross-platform compatible)
+  - pkms-release /drone/src/CLAUDE.md ${DRONE_BUILD_NUMBER} CLAUDE-Guide markdown universal
