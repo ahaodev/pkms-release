@@ -39,10 +39,7 @@ print_usage() {
     echo "  DRONE_COMMIT   - Current commit from Drone CI"
     echo "  DRONE_BRANCH   - Current branch from Drone CI"
     echo ""
-    echo "Docker usage example:"
-    echo "  docker run --rm -v \"\$PWD:/workspace\" -w /workspace \\"
-    echo "    -e ACCESS_TOKEN=\$TOKEN -e RELEASE_URL=\$URL \\"
-    echo "    alpine/git:latest sh -c 'apk add --no-cache curl jq && ./scripts/pkms-release.sh ./app.apk v1.0.0'"
+    echo "Docker example: docker run --rm -v \$PWD:/workspace pkms-release:latest ./app.apk v1.0.0"
 }
 
 # Validate inputs
@@ -56,10 +53,7 @@ if [ ! -f "$FILE_PATH" ]; then
     exit 1
 fi
 
-echo "🚀 PKMS Release Script Starting..."
-echo "📦 File: $FILE_PATH"
-echo "🏷️  Version: $VERSION"
-echo "🌍 Environment: Drone CI"
+echo "🚀 Starting release: $VERSION ($FILE_PATH)"
 
 # ============================================================================
 # CHANGELOG GENERATION SECTION
@@ -209,20 +203,11 @@ echo ""
 # RELEASE UPLOAD SECTION
 # ============================================================================
 
-echo "🚀 Starting release upload..."
-echo "📂 File: $FILE_PATH"
-echo "🏷️  Version: $VERSION"
-echo "📦 Artifact: $ARTIFACT_NAME"
-echo "🖥️  OS: $OS"
-echo "🏗️  Arch: $ARCH"
-echo "🌐 URL: $RELEASE_URL"
+echo "📤 Uploading: $ARTIFACT_NAME ($OS/$ARCH) to $RELEASE_URL"
 
-# Test connectivity (non-blocking for Docker environments)
-echo "🔗 Testing connectivity to $RELEASE_URL..."
-if curl --connect-timeout 5 --max-time 10 -s -I "$RELEASE_URL" >/dev/null 2>&1; then
-    echo "✅ Connectivity test passed"
-else
-    echo "⚠️  Connectivity test failed - continuing anyway (common in Docker)"
+# Test connectivity
+if ! curl --connect-timeout 5 --max-time 10 -s -I "$RELEASE_URL" >/dev/null 2>&1; then
+    echo "⚠️  Connectivity test failed - continuing anyway"
 fi
 
 # Prepare upload with enhanced error handling for Docker environments
@@ -266,23 +251,19 @@ if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
         cat "$RESPONSE_FILE"
     fi
     echo ""
-    echo "✅ Release completed successfully!"
-    echo "🏷️  Version: $VERSION"
-    echo "📦 Artifact: $ARTIFACT_NAME uploaded"
+    echo "✅ Release $VERSION completed!"
     
     # Cleanup temporary files
     rm -f "$RESPONSE_FILE" "$ERROR_FILE" "$CHANGELOG_FILE" /tmp/changelog-error.log
     
-elif [ "$HTTP_CODE" = "0" ]; then
-    echo "❌ Upload failed - Network/Connection error"
-    echo "🔍 Curl errors:"
-    cat "$ERROR_FILE" 2>/dev/null || echo "No curl error details available"
-    exit 1
 else
-    echo "❌ Upload failed with HTTP code: $HTTP_CODE"
-    echo "📋 Response body:"
-    cat "$RESPONSE_FILE" 2>/dev/null || echo "No response body available"
-    echo "🔍 Curl errors:"
-    cat "$ERROR_FILE" 2>/dev/null || echo "No curl error details available"
+    if [ "$HTTP_CODE" = "0" ]; then
+        echo "❌ Upload failed - Network/Connection error"
+    else
+        echo "❌ Upload failed with HTTP code: $HTTP_CODE"
+        cat "$RESPONSE_FILE" 2>/dev/null || echo "No response available"
+    fi
+    echo "Error details:"
+    cat "$ERROR_FILE" 2>/dev/null || echo "No error details available"
     exit 1
 fi
