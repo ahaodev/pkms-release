@@ -1,0 +1,16 @@
+kind: pipeline
+type: docker
+name: release-test
+
+trigger:
+  event:
+  - tag
+
+steps:
+- name: release-claude-md
+  image: hao88/pkms-release:latest
+  environment:
+    ACCESS_TOKEN: PKMS-eQgU4p8surNNQ37T
+    RELEASE_URL: http://192.168.99.105:65080/client-access/release
+  commands:
+  - pkms-release /drone/src/CLAUDE.md ${DRONE_TAG} CLAUDE-Guide markdown universal
