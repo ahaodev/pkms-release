@@ -1,10 +1,6 @@
 kind: pipeline
 type: docker
-name: release-test
-
-trigger:
-  event:
-  - tag
+name: pkms-release-test
 
 steps:
 - name: release-claude-md
