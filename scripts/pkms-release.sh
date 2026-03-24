@@ -21,6 +21,22 @@ DRONE_TAG="${DRONE_TAG}"
 DRONE_COMMIT="${DRONE_COMMIT}"
 DRONE_BRANCH="${DRONE_BRANCH}"
 
+# GitHub Actions environment variables
+GITHUB_REF_NAME="${GITHUB_REF_NAME}"
+GITHUB_SHA="${GITHUB_SHA}"
+GITHUB_REF="${GITHUB_REF}"
+
+# Resolve effective CI variables (GitHub Actions takes precedence when Drone vars are absent)
+if [ -z "$DRONE_TAG" ] && [ -n "$GITHUB_REF" ] && echo "$GITHUB_REF" | grep -q "^refs/tags/"; then
+    DRONE_TAG="${GITHUB_REF_NAME}"
+fi
+if [ -z "$DRONE_COMMIT" ] && [ -n "$GITHUB_SHA" ]; then
+    DRONE_COMMIT="${GITHUB_SHA}"
+fi
+if [ -z "$DRONE_BRANCH" ] && [ -n "$GITHUB_REF_NAME" ]; then
+    DRONE_BRANCH="${GITHUB_REF_NAME}"
+fi
+
 # Function to print usage
 print_usage() {
     echo "Usage: $0 <file_path> <version> [artifact_name] [os] [arch]"
@@ -33,11 +49,14 @@ print_usage() {
     echo "  arch           - Target architecture (default: universal)"
     echo ""
     echo "Environment variables:"
-    echo "  ACCESS_TOKEN   - Release system access token"
-    echo "  RELEASE_URL    - Release system URL"
-    echo "  DRONE_TAG      - Current tag from Drone CI"
-    echo "  DRONE_COMMIT   - Current commit from Drone CI"
-    echo "  DRONE_BRANCH   - Current branch from Drone CI"
+    echo "  ACCESS_TOKEN      - Release system access token"
+    echo "  RELEASE_URL       - Release system URL"
+    echo "  DRONE_TAG         - Current tag from Drone CI"
+    echo "  DRONE_COMMIT      - Current commit from Drone CI"
+    echo "  DRONE_BRANCH      - Current branch from Drone CI"
+    echo "  GITHUB_REF        - GitHub Actions ref (e.g. refs/tags/v1.0.0)"
+    echo "  GITHUB_REF_NAME   - GitHub Actions tag or branch name"
+    echo "  GITHUB_SHA        - GitHub Actions commit SHA"
     echo ""
     echo "Docker example: docker run --rm -v \$PWD:/workspace pkms-release:latest ./app.apk v1.0.0"
 }

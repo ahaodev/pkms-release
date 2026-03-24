@@ -1,0 +1,50 @@
+name: 'PKMS Release'
+description: 'Generate changelog and upload release artifacts to a release system'
+author: 'CICD Team'
+
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+
+inputs:
+  file_path:
+    description: 'Path to the release artifact file'
+    required: true
+  version:
+    description: 'Release version (e.g., v1.0.0). Defaults to the tag name when running on a tag push.'
+    required: false
+    default: ''
+  artifact_name:
+    description: 'Name of the artifact (defaults to the filename)'
+    required: false
+    default: ''
+  os:
+    description: 'Target OS/platform (default: android)'
+    required: false
+    default: 'android'
+  arch:
+    description: 'Target architecture (default: universal)'
+    required: false
+    default: 'universal'
+  access_token:
+    description: 'Release system access token'
+    required: true
+  release_url:
+    description: 'Release system API endpoint URL'
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'docker://hao88/pkms-release:latest'
+  args:
+    - ${{ inputs.file_path }}
+    - ${{ inputs.version != '' && inputs.version || github.ref_name }}
+    - ${{ inputs.artifact_name }}
+    - ${{ inputs.os }}
+    - ${{ inputs.arch }}
+  env:
+    ACCESS_TOKEN: ${{ inputs.access_token }}
+    RELEASE_URL: ${{ inputs.release_url }}
+    GITHUB_REF: ${{ github.ref }}
+    GITHUB_REF_NAME: ${{ github.ref_name }}
+    GITHUB_SHA: ${{ github.sha }}

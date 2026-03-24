@@ -46,6 +46,11 @@ docker run --rm -v "$PWD:/workspace" -w /workspace \
 - `DRONE_COMMIT`: 当前提交哈希
 - `DRONE_BRANCH`: 当前分支
 
+**GitHub Actions 变量 (可选，自动注入):**
+- `GITHUB_REF`: GitHub Actions 的完整 ref（如 `refs/tags/v1.0.0`）
+- `GITHUB_REF_NAME`: 标签或分支名称（如 `v1.0.0`）
+- `GITHUB_SHA`: 提交 SHA
+
 ## 使用示例
 
 ### Docker 方式
@@ -78,6 +83,69 @@ steps:
     commands:
       - /workspace/build/app.apk ${DRONE_TAG}
 ```
+
+#### 在 GitHub Actions 中使用
+
+使用内置的 Action（推荐）：
+
+```yaml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Publish release
+        uses: ahaodev/pkms-release@main  # pin to a specific tag in production, e.g. @v1.0.0
+        with:
+          file_path: './app.apk'
+          version: ${{ github.ref_name }}
+          artifact_name: 'MyApp'
+          os: 'android'
+          arch: 'universal'
+          access_token: ${{ secrets.ACCESS_TOKEN }}
+          release_url: ${{ secrets.RELEASE_URL }}
+```
+
+使用 Docker 容器方式：
+
+```yaml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container:
+      image: hao88/pkms-release:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Publish release
+        env:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          RELEASE_URL: ${{ secrets.RELEASE_URL }}
+        run: pkms-release ./app.apk ${{ github.ref_name }} MyApp android universal
+```
+
+> **提示：** 在 GitHub Actions 中需要在仓库的 **Settings → Secrets and variables → Actions** 中添加 `ACCESS_TOKEN` 和 `RELEASE_URL` 两个 Secret。
 
 ### 直接脚本方式
 

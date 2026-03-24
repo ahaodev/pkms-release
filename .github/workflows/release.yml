@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Build or prepare your artifact here, e.g.:
+      # - name: Build
+      #   run: ./gradlew assembleRelease
+
+      - name: Publish release
+        uses: ahaodev/pkms-release@main  # pin to a specific tag in production, e.g. @v1.0.0
+        with:
+          file_path: './app.apk'          # path to your release artifact
+          version: ${{ github.ref_name }} # tag name, e.g. v1.0.0
+          artifact_name: 'MyApp'
+          os: 'android'
+          arch: 'universal'
+          access_token: ${{ secrets.ACCESS_TOKEN }}
+          release_url: ${{ secrets.RELEASE_URL }}

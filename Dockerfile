@@ -35,6 +35,9 @@ ENV RELEASE_URL=""
 ENV DRONE_TAG=""
 ENV DRONE_COMMIT=""
 ENV DRONE_BRANCH=""
+ENV GITHUB_REF=""
+ENV GITHUB_REF_NAME=""
+ENV GITHUB_SHA=""
 
 # Create non-root user for security
 RUN addgroup -g 1000 pkms && \
