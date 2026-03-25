@@ -16,14 +16,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Create a dummy artifact for testing (replace with your real build step)
-      - name: Create test artifact
-        run: echo "test-artifact" > ./app.apk
-
       - name: Publish release
         uses: ahaodev/pkms-release@main
         with:
-          file_path: './app.apk'
+          file_path: './Dockerfile'
           version: ${{ github.ref_name }} # tag name, e.g. v1.0.0
           artifact_name: 'MyApp'
           os: 'android'
