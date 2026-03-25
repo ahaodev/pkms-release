@@ -35,7 +35,7 @@ inputs:
 
 runs:
   using: 'docker'
-  image: 'docker://hao88/pkms-release:latest'
+  image: 'Dockerfile'
   args:
     - ${{ inputs.file_path }}
     - ${{ inputs.version != '' && inputs.version || github.ref_name }}

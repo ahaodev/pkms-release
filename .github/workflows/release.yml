@@ -16,14 +16,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Build or prepare your artifact here, e.g.:
-      # - name: Build
-      #   run: ./gradlew assembleRelease
+      # Create a dummy artifact for testing (replace with your real build step)
+      - name: Create test artifact
+        run: echo "test-artifact" > ./app.apk
 
       - name: Publish release
-        uses: ahaodev/pkms-release@main  # pin to a specific tag in production, e.g. @v1.0.0
+        uses: ahaodev/pkms-release@main
         with:
-          file_path: './app.apk'          # path to your release artifact
+          file_path: './app.apk'
           version: ${{ github.ref_name }} # tag name, e.g. v1.0.0
           artifact_name: 'MyApp'
           os: 'android'
