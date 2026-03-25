@@ -49,8 +49,8 @@ RUN chown -R pkms:pkms /workspace
 # Switch to non-root user
 USER pkms
 
-# Default command
-CMD ["pkms-release", "--help"]
+# Override alpine/curl's ENTRYPOINT so args are passed to pkms-release
+ENTRYPOINT ["pkms-release"]
 
 # Health check (optional)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
