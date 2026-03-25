@@ -237,6 +237,7 @@ RESPONSE_FILE="/tmp/release-response.json"
 ERROR_FILE="/tmp/curl-error.log"
 
 # Perform the upload with comprehensive error handling
+HEADER_FILE="/tmp/release-headers.txt"
 HTTP_CODE=$(curl -X POST "$RELEASE_URL" \
     -H "x-access-token: $ACCESS_TOKEN" \
     -H "User-Agent: PKMS-Release-Script/1.0" \
@@ -256,12 +257,24 @@ HTTP_CODE=$(curl -X POST "$RELEASE_URL" \
     --show-error \
     --fail-with-body \
     --write-out "%{http_code}" \
+    --dump-header "$HEADER_FILE" \
     --output "$RESPONSE_FILE" 2>"$ERROR_FILE" || echo "0")
 
 echo ""
 
 # Check the response
 if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+    # Verify response is JSON, not an HTML page (e.g. SPA fallback)
+    CONTENT_TYPE=$(grep -i "^content-type:" "$HEADER_FILE" 2>/dev/null | tail -1 | tr -d '\r')
+    if echo "$CONTENT_TYPE" | grep -qi "text/html"; then
+        echo "❌ Upload failed - server returned HTML instead of JSON (HTTP $HTTP_CODE)"
+        echo "   This usually means RELEASE_URL is pointing to a frontend page, not the API endpoint."
+        echo "   Content-Type: $CONTENT_TYPE"
+        echo "   Please check your RELEASE_URL configuration."
+        rm -f "$RESPONSE_FILE" "$ERROR_FILE" "$HEADER_FILE" "$CHANGELOG_FILE" /tmp/changelog-error.log
+        exit 1
+    fi
+
     echo "🎉 Release upload successful! (HTTP $HTTP_CODE)"
     echo "📋 Response:"
     if command -v jq >/dev/null 2>&1; then
@@ -273,7 +286,7 @@ if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
     echo "✅ Release $VERSION completed!"
     
     # Cleanup temporary files
-    rm -f "$RESPONSE_FILE" "$ERROR_FILE" "$CHANGELOG_FILE" /tmp/changelog-error.log
+    rm -f "$RESPONSE_FILE" "$ERROR_FILE" "$HEADER_FILE" "$CHANGELOG_FILE" /tmp/changelog-error.log
     
 else
     if [ "$HTTP_CODE" = "0" ]; then
@@ -284,5 +297,6 @@ else
     fi
     echo "Error details:"
     cat "$ERROR_FILE" 2>/dev/null || echo "No error details available"
+    rm -f "$HEADER_FILE"
     exit 1
 fi
