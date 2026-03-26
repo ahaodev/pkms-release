@@ -225,7 +225,7 @@ set -x  # 显示执行过程
 可在项目根目录创建 `.env` 文件：
 ```bash
 ACCESS_TOKEN=your-default-token
-RELEASE_URL=https://your-release-system.com/client-access/release
+RELEASE_URL=https://your-release-system.com/access/release
 ```
 
 然后使用：

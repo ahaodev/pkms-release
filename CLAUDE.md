@@ -47,7 +47,7 @@ chmod +x scripts/pkms-release.sh
 
 ### Required Environment Variables
 - `ACCESS_TOKEN` - Release system access token (default: PKMS-9xuKyfbBvAJAwv42)
-- `RELEASE_URL` - Release system endpoint (default: https://your-release-system.com/client-access/release)
+- `RELEASE_URL` - Release system endpoint (default: https://your-release-system.com/access/release)
 
 ### Optional Drone CI Variables
 - `DRONE_TAG` - Current tag from Drone CI
