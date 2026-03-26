@@ -59,7 +59,7 @@ docker run --rm -v "$PWD:/workspace" -w /workspace \
 ```bash
 docker run --rm -v "$PWD:/workspace" -w /workspace \
   -e ACCESS_TOKEN=PKMS-9xuKyfbBvAJAwv42 \
-  -e RELEASE_URL=https://your-release-system.com/client-access/release \
+  -e RELEASE_URL=https://your-release-system.com/access/release \
   pkms-release:latest ./app.apk v1.2.0
 ```
 
@@ -155,7 +155,7 @@ chmod +x scripts/pkms-release.sh
 
 # 设置环境变量
 export ACCESS_TOKEN="your-token"
-export RELEASE_URL="https://your-release-system.com/client-access/release"
+export RELEASE_URL="https://your-release-system.com/access/release"
 
 # 运行脚本
 ./scripts/pkms-release.sh ./app.apk v1.0.0
