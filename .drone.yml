@@ -5,7 +5,8 @@ name: pms-releaser-test
 trigger:
   event:
     - push
-
+node:
+  runner: msa2
 steps:
 - name: release-test-apk
   image: hao88/pms-releaser:latest
