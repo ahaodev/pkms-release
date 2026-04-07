@@ -4,15 +4,15 @@ name: pms-releaser-test
 
 trigger:
   event:
-    - tag
+    - push
 
 steps:
 - name: release-test-apk
   image: hao88/pms-releaser:latest
   environment:
     ACCESS_TOKEN:
-      from_secret: ACCESS_TOKEN
+      from_secret: PMS_TOKEN
     RELEASE_URL:
-      from_secret: RELEASE_URL
+      from_secret: PMS_URL
   commands:
-  - pms-releaser /drone/src/test.apk ${DRONE_TAG} my-project my-package test-apk android universal
+  - pms-releaser /drone/src/test.apk ${DRONE_COMMIT} TEST Release android universal
