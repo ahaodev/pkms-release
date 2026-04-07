@@ -13,7 +13,6 @@ steps:
   environment:
     ACCESS_TOKEN:
       from_secret: PMS_TOKEN
-    RELEASE_URL:
-      from_secret: PMS_URL
+    RELEASE_URL: http://192.168.99.17:56688/access/release/
   commands:
   - pms-releaser /drone/src/test.apk ${DRONE_COMMIT} TEST Release android universal
