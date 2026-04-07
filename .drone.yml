@@ -11,8 +11,7 @@ steps:
 - name: release-test-apk
   image: ghcr.io/ahaodev/pms-releaser:latest
   environment:
-    ACCESS_TOKEN:
-      from_secret: PMS_TOKEN
+    ACCESS_TOKEN: kZLdTvr2VVyUpaEy
     RELEASE_URL: http://192.168.99.17:56688/access/release
   commands:
   - pms-releaser /drone/src/test.apk ${DRONE_COMMIT} TEST Release android universal
