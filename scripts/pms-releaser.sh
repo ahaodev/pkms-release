@@ -2,7 +2,7 @@
 
 # Integrated script for Drone CI/CD: Generate changelog and upload release
 # Combines generate-changelog.sh and release-upload.sh for Docker image usage
-# Usage: ./pkms-release.sh <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
+# Usage: ./pms-releaser.sh <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
 
 set -e
 set -o pipefail
@@ -62,7 +62,7 @@ print_usage() {
     echo "  GITHUB_REF_NAME   - GitHub Actions tag or branch name"
     echo "  GITHUB_SHA        - GitHub Actions commit SHA"
     echo ""
-    echo "Docker example: docker run --rm -v \$PWD:/workspace pkms-release:latest ./app.apk v1.0.0 my-project my-package"
+    echo "Docker example: docker run --rm -v \$PWD:/workspace pms-releaser:latest ./app.apk v1.0.0 my-project my-package"
 }
 
 # Validate inputs
@@ -244,7 +244,7 @@ ERROR_FILE="/tmp/curl-error.log"
 HEADER_FILE="/tmp/release-headers.txt"
 HTTP_CODE=$(curl -X POST "$RELEASE_URL" \
     -H "x-access-token: $ACCESS_TOKEN" \
-    -H "User-Agent: PKMS-Release-Script/1.0" \
+    -H "User-Agent: PMS-Releaser-Script/1.0" \
     -F "file=@$FILE_PATH" \
     -F "version=$VERSION" \
     -F "project_name=$PROJECT_NAME" \

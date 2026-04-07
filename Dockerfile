@@ -1,11 +1,11 @@
-# Dockerfile for PKMS Release Tool
+# Dockerfile for PMS Releaser Tool
 # Based on alpine/curl with additional tools for changelog generation and release upload
 
 FROM alpine/curl:latest
 
 # Metadata
 LABEL maintainer="CICD Team"
-LABEL description="PKMS CI/CD Release Tool with Changelog Generation"
+LABEL description="PMS Releaser CI/CD Tool with Changelog Generation"
 LABEL version="1.0.0"
 
 # Install required packages
@@ -23,11 +23,11 @@ ENV TZ=Asia/Shanghai
 WORKDIR /workspace
 
 # Copy the integrated release script
-COPY scripts/pkms-release.sh /usr/local/bin/pkms-release
-RUN chmod +x /usr/local/bin/pkms-release
+COPY scripts/pms-releaser.sh /usr/local/bin/pms-releaser
+RUN chmod +x /usr/local/bin/pms-releaser
 
 # Create a symlink for backward compatibility
-RUN ln -s /usr/local/bin/pkms-release /usr/local/bin/pkms-release.sh
+RUN ln -s /usr/local/bin/pms-releaser /usr/local/bin/pms-releaser.sh
 
 # Set default environment variables
 ENV ACCESS_TOKEN=""
@@ -40,18 +40,18 @@ ENV GITHUB_REF_NAME=""
 ENV GITHUB_SHA=""
 
 # Create non-root user for security
-RUN addgroup -g 1000 pkms && \
-    adduser -u 1000 -G pkms -s /bin/bash -D pkms
+RUN addgroup -g 1000 pms && \
+    adduser -u 1000 -G pms -s /bin/bash -D pms
 
 # Set ownership of working directory
-RUN chown -R pkms:pkms /workspace
+RUN chown -R pms:pms /workspace
 
 # Switch to non-root user
-USER pkms
+USER pms
 
-# Override alpine/curl's ENTRYPOINT so args are passed to pkms-release
-ENTRYPOINT ["pkms-release"]
+# Override alpine/curl's ENTRYPOINT so args are passed to pms-releaser
+ENTRYPOINT ["pms-releaser"]
 
 # Health check (optional)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD which pkms-release && which curl && which git && which jq || exit 1
+    CMD which pms-releaser && which curl && which git && which jq || exit 1

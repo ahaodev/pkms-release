@@ -1,6 +1,6 @@
-# PKMS Release Tool
+# PMS Releaser Tool
 
-PKMS Release 是一款面向 CI/CD 流水线的自动化发布工具，能够从 Git 提交记录自动生成变更日志，并将构建产物上传到指定发布系统。支持脚本、GitHub Actions、Drone CI 和 Docker 四种使用方式。
+PMS Releaser 是一款面向 CI/CD 流水线的自动化发布工具，能够从 Git 提交记录自动生成变更日志，并将构建产物上传到指定发布系统。支持脚本、GitHub Actions、Drone CI 和 Docker 四种使用方式。
 
 ---
 
@@ -54,7 +54,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ahaodev/pkms-release@main
+      - uses: ahaodev/pms-releaser@main
         with:
           file_path: './app.apk'
           version: ${{ github.ref_name }}
@@ -73,7 +73,7 @@ jobs:
 ## 命令参数
 
 ```bash
-pkms-release <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
+pms-releaser <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
 ```
 
 ### 必需参数
@@ -113,12 +113,12 @@ pkms-release <file_path> <version> <project_name> <package_name> [artifact_name]
 ### 1. 直接运行脚本
 
 ```bash
-chmod +x scripts/pkms-release.sh
+chmod +x scripts/pms-releaser.sh
 
 export ACCESS_TOKEN="your-token"
 export RELEASE_URL="https://your-release-system.com/access/release"
 
-./scripts/pkms-release.sh ./app.apk v1.0.0 my-project my-package
+./scripts/pms-releaser.sh ./app.apk v1.0.0 my-project my-package
 ```
 
 使用 `.env` 文件管理本地配置（推荐）：
@@ -132,7 +132,7 @@ export PACKAGE_NAME=my-package
 ```
 
 ```bash
-source .env && ./scripts/pkms-release.sh ./app.apk v1.0.0 $PROJECT_NAME $PACKAGE_NAME
+source .env && ./scripts/pms-releaser.sh ./app.apk v1.0.0 $PROJECT_NAME $PACKAGE_NAME
 ```
 
 ### 2. GitHub Actions
@@ -140,7 +140,7 @@ source .env && ./scripts/pkms-release.sh ./app.apk v1.0.0 $PROJECT_NAME $PACKAGE
 **方式一：使用内置 Action（推荐）**
 
 ```yaml
-- uses: ahaodev/pkms-release@main  # 生产环境建议固定到具体 tag，如 @v1.0.0
+- uses: ahaodev/pms-releaser@main  # 生产环境建议固定到具体 tag，如 @v1.0.0
   with:
     file_path: './app.apk'
     version: ${{ github.ref_name }}
@@ -160,7 +160,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     container:
-      image: hao88/pkms-release:latest
+      image: hao88/pms-releaser:latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -171,7 +171,7 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           RELEASE_URL: ${{ secrets.RELEASE_URL }}
         run: |
-          pkms-release ./app.apk ${{ github.ref_name }} \
+          pms-releaser ./app.apk ${{ github.ref_name }} \
             ${{ vars.PROJECT_NAME }} ${{ vars.PACKAGE_NAME }} \
             MyApp android universal
 ```
@@ -193,14 +193,14 @@ trigger:
 
 steps:
   - name: release
-    image: hao88/pkms-release:latest
+    image: hao88/pms-releaser:latest
     environment:
       ACCESS_TOKEN:
         from_secret: ACCESS_TOKEN
       RELEASE_URL:
         from_secret: RELEASE_URL
     commands:
-      - pkms-release /drone/src/app.apk ${DRONE_TAG} my-project my-package
+      - pms-releaser /drone/src/app.apk ${DRONE_TAG} my-project my-package
 ```
 
 ### 4. Docker
@@ -210,14 +210,14 @@ steps:
 docker run --rm -v "$PWD:/workspace" -w /workspace \
   -e ACCESS_TOKEN=your-token \
   -e RELEASE_URL=https://your-release-system.com/access/release \
-  hao88/pkms-release:latest \
+  hao88/pms-releaser:latest \
   /workspace/app.apk v1.0.0 my-project my-package
 
 # 指定 artifact 名称、平台和架构
 docker run --rm -v "$PWD:/workspace" -w /workspace \
   -e ACCESS_TOKEN=your-token \
   -e RELEASE_URL=https://your-release-system.com/access/release \
-  hao88/pkms-release:latest \
+  hao88/pms-releaser:latest \
   ./build/MyApp.apk v2.1.0 my-project my-package "MyApplication" "android" "arm64"
 ```
 

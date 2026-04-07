@@ -2,24 +2,24 @@
 
 ## Project Overview
 
-This is a CI/CD release tool distributed as a Docker image (`hao88/pkms-release`) and a reusable GitHub Action (`ahaodev/pkms-release`). It automates two things in one step: generating a changelog from git history and uploading a release artifact via HTTP to a PKMS release system.
+This is a CI/CD release tool distributed as a Docker image (`hao88/pms-releaser`) and a reusable GitHub Action (`ahaodev/pms-releaser`). It automates two things in one step: generating a changelog from git history and uploading a release artifact via HTTP to a PKMS release system.
 
 ## Architecture
 
 ```
-Dockerfile                  # Alpine image; installs bash/git/jq/curl, copies script to /usr/local/bin/pkms-release
-scripts/pkms-release.sh     # Single integrated script — both changelog gen and upload logic live here
+Dockerfile                  # Alpine image; installs bash/git/jq/curl, copies script to /usr/local/bin/pms-releaser
+scripts/pms-releaser.sh     # Single integrated script — both changelog gen and upload logic live here
 action.yml                  # GitHub Action wrapper; passes inputs as positional args to the Docker container
 .drone.yml                  # Drone CI pipeline; triggers only on tag events
 .github/workflows/release.yml  # GitHub Actions workflow — uses this repo's own action to release itself
 ```
 
-The Docker `ENTRYPOINT` is `pkms-release` (not a shell), so arguments passed in `commands:` (Drone) or `args:` (action.yml) go directly to the script.
+The Docker `ENTRYPOINT` is `pms-releaser` (not a shell), so arguments passed in `commands:` (Drone) or `args:` (action.yml) go directly to the script.
 
 ## Script Signature
 
 ```bash
-pkms-release <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
+pms-releaser <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
 ```
 
 | Position | Param | Required | Default |
@@ -38,16 +38,16 @@ pkms-release <file_path> <version> <project_name> <package_name> [artifact_name]
 
 ```bash
 # Build the image
-docker build -t pkms-release:latest .
+docker build -t pms-releaser:latest .
 
 # Run directly
 docker run --rm -v "$PWD:/workspace" -w /workspace \
   -e ACCESS_TOKEN=$TOKEN -e RELEASE_URL=$URL \
-  pkms-release:latest /workspace/app.apk v1.0.0 my-project my-package
+  pms-releaser:latest /workspace/app.apk v1.0.0 my-project my-package
 
 # Run script without Docker (requires bash, git, jq, curl)
-chmod +x scripts/pkms-release.sh
-ACCESS_TOKEN=... RELEASE_URL=... ./scripts/pkms-release.sh ./app.apk v1.0.0 my-project my-package
+chmod +x scripts/pms-releaser.sh
+ACCESS_TOKEN=... RELEASE_URL=... ./scripts/pms-releaser.sh ./app.apk v1.0.0 my-project my-package
 ```
 
 ## CI Integration

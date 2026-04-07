@@ -1,4 +1,4 @@
-name: 'PKMS Release'
+name: 'PMS Releaser'
 description: 'Generate changelog and upload release artifacts to a release system'
 author: 'CICD Team'
 
