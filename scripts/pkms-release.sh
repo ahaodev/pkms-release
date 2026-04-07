@@ -2,7 +2,7 @@
 
 # Integrated script for Drone CI/CD: Generate changelog and upload release
 # Combines generate-changelog.sh and release-upload.sh for Docker image usage
-# Usage: ./pkms-release.sh <file_path> <version> [artifact_name] [os] [arch]
+# Usage: ./pkms-release.sh <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
 
 set -e
 set -o pipefail
@@ -10,9 +10,11 @@ set -o pipefail
 # Configuration
 FILE_PATH="$1"
 VERSION="$2"
-ARTIFACT_NAME="${3:-$(basename "$FILE_PATH" 2>/dev/null || echo "app")}"
-OS="${4:-android}"
-ARCH="${5:-universal}"
+PROJECT_NAME="$3"
+PACKAGE_NAME="$4"
+ARTIFACT_NAME="${5:-$(basename "$FILE_PATH" 2>/dev/null || echo "app")}"
+OS="${6:-android}"
+ARCH="${7:-universal}"
 ACCESS_TOKEN="${ACCESS_TOKEN:-PKMS-9xuKyfbBvAJAwv42}"
 RELEASE_URL="${RELEASE_URL:-https://your-release-system.com/access/release}"
 
@@ -39,11 +41,13 @@ fi
 
 # Function to print usage
 print_usage() {
-    echo "Usage: $0 <file_path> <version> [artifact_name] [os] [arch]"
+    echo "Usage: $0 <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]"
     echo ""
     echo "Arguments:"
     echo "  file_path      - Path to the release artifact file"
     echo "  version        - Release version (e.g., v1.0.0)"
+    echo "  project_name   - Project name in the release system"
+    echo "  package_name   - Package name within the project"
     echo "  artifact_name  - Name of the artifact (default: filename)"
     echo "  os             - Target OS (default: android)"
     echo "  arch           - Target architecture (default: universal)"
@@ -58,11 +62,11 @@ print_usage() {
     echo "  GITHUB_REF_NAME   - GitHub Actions tag or branch name"
     echo "  GITHUB_SHA        - GitHub Actions commit SHA"
     echo ""
-    echo "Docker example: docker run --rm -v \$PWD:/workspace pkms-release:latest ./app.apk v1.0.0"
+    echo "Docker example: docker run --rm -v \$PWD:/workspace pkms-release:latest ./app.apk v1.0.0 my-project my-package"
 }
 
 # Validate inputs
-if [ -z "$FILE_PATH" ] || [ -z "$VERSION" ]; then
+if [ -z "$FILE_PATH" ] || [ -z "$VERSION" ] || [ -z "$PROJECT_NAME" ] || [ -z "$PACKAGE_NAME" ]; then
     print_usage
     exit 1
 fi
@@ -72,7 +76,7 @@ if [ ! -f "$FILE_PATH" ]; then
     exit 1
 fi
 
-echo "🚀 Starting release: $VERSION ($FILE_PATH)"
+echo "🚀 Starting release: $VERSION ($FILE_PATH) → $PROJECT_NAME/$PACKAGE_NAME"
 
 # ============================================================================
 # CHANGELOG GENERATION SECTION
@@ -243,6 +247,8 @@ HTTP_CODE=$(curl -X POST "$RELEASE_URL" \
     -H "User-Agent: PKMS-Release-Script/1.0" \
     -F "file=@$FILE_PATH" \
     -F "version=$VERSION" \
+    -F "project_name=$PROJECT_NAME" \
+    -F "package_name=$PACKAGE_NAME" \
     -F "artifact=$ARTIFACT_NAME" \
     -F "os=$OS" \
     -F "arch=$ARCH" \

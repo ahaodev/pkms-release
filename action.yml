@@ -14,6 +14,12 @@ inputs:
     description: 'Release version (e.g., v1.0.0). Defaults to the tag name when running on a tag push.'
     required: false
     default: ''
+  project_name:
+    description: 'Project name in the release system'
+    required: true
+  package_name:
+    description: 'Package name within the project'
+    required: true
   artifact_name:
     description: 'Name of the artifact (defaults to the filename)'
     required: false
@@ -39,6 +45,8 @@ runs:
   args:
     - ${{ inputs.file_path }}
     - ${{ inputs.version != '' && inputs.version || github.ref_name }}
+    - ${{ inputs.project_name }}
+    - ${{ inputs.package_name }}
     - ${{ inputs.artifact_name }}
     - ${{ inputs.os }}
     - ${{ inputs.arch }}

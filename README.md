@@ -15,7 +15,7 @@ docker build -t pkms-release:latest .
 ```bash
 docker run --rm -v "$PWD:/workspace" -w /workspace \
   -e ACCESS_TOKEN=your-token -e RELEASE_URL=your-url \
-  pkms-release:latest /workspace/app.apk v1.0.0
+  pkms-release:latest /workspace/app.apk v1.0.0 my-project my-package
 ```
 
 ## 详细说明
@@ -23,14 +23,17 @@ docker run --rm -v "$PWD:/workspace" -w /workspace \
 ### 命令格式
 
 ```bash
-./scripts/pkms-release.sh <file_path> <version> [artifact_name] [os] [arch]
+./scripts/pkms-release.sh <file_path> <version> <project_name> <package_name> [artifact_name] [os] [arch]
 ```
 
 **必需参数:**
 - `file_path`: 要发布的文件路径
 - `version`: 版本号 (如: v1.0.0)
+- `project_name`: 发布系统中的项目名称
+- `package_name`: 项目下的包名称
 
 **可选参数:**
+
 - `artifact_name`: 文件名称 (默认: 文件名)
 - `os`: 目标系统 (默认: android)
 - `arch`: 目标架构 (默认: universal)
@@ -38,10 +41,12 @@ docker run --rm -v "$PWD:/workspace" -w /workspace \
 ### 环境变量
 
 **必需变量:**
+
 - `ACCESS_TOKEN`: 发布系统访问令牌
 - `RELEASE_URL`: 发布系统 API 地址
 
 **Drone CI 变量 (可选):**
+
 - `DRONE_TAG`: 当前标签
 - `DRONE_COMMIT`: 当前提交哈希
 - `DRONE_BRANCH`: 当前分支
@@ -58,30 +63,33 @@ docker run --rm -v "$PWD:/workspace" -w /workspace \
 #### 基本发布
 ```bash
 docker run --rm -v "$PWD:/workspace" -w /workspace \
-  -e ACCESS_TOKEN=PKMS-9xuKyfbBvAJAwv42 \
-  -e RELEASE_URL=https://your-release-system.com/access/release \
-  pkms-release:latest ./app.apk v1.2.0
+  -e ACCESS_TOKEN=your-token -e RELEASE_URL=your-url \
+  pkms-release:latest /workspace/app.apk v1.2.0 my-project my-package
 ```
 
 #### 指定详细信息
 ```bash
 docker run --rm -v "$PWD:/workspace" -w /workspace \
   -e ACCESS_TOKEN=your-token -e RELEASE_URL=your-url \
-  pkms-release:latest ./build/MyApp.apk v2.1.0 "MyApplication" "android" "arm64"
+  pkms-release:latest ./build/MyApp.apk v2.1.0 my-project my-package "MyApplication" "android" "arm64"
 ```
 
 #### 在 Drone CI 中使用
 ```yaml
+trigger:
+  event:
+    - tag
+
 steps:
   - name: release
-    image: pkms-release:latest
+    image: hao88/pkms-release:latest
     environment:
       ACCESS_TOKEN:
-        from_secret: release_token
+        from_secret: ACCESS_TOKEN
       RELEASE_URL:
-        from_secret: release_url
+        from_secret: RELEASE_URL
     commands:
-      - /workspace/build/app.apk ${DRONE_TAG}
+      - pkms-release /drone/src/app.apk ${DRONE_TAG} my-project my-package
 ```
 
 #### 在 GitHub Actions 中使用
@@ -110,6 +118,8 @@ jobs:
         with:
           file_path: './app.apk'
           version: ${{ github.ref_name }}
+          project_name: ${{ vars.PROJECT_NAME }}   # set in repo/org variables
+          package_name: ${{ vars.PACKAGE_NAME }}   # set in repo/org variables
           artifact_name: 'MyApp'
           os: 'android'
           arch: 'universal'
@@ -142,7 +152,7 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           RELEASE_URL: ${{ secrets.RELEASE_URL }}
-        run: pkms-release ./app.apk ${{ github.ref_name }} MyApp android universal
+        run: pkms-release ./app.apk ${{ github.ref_name }} ${{ vars.PROJECT_NAME }} ${{ vars.PACKAGE_NAME }} MyApp android universal
 ```
 
 > **提示：** 在 GitHub Actions 中需要在仓库的 **Settings → Secrets and variables → Actions** 中添加 `ACCESS_TOKEN` 和 `RELEASE_URL` 两个 Secret。
@@ -158,8 +168,24 @@ export ACCESS_TOKEN="your-token"
 export RELEASE_URL="https://your-release-system.com/access/release"
 
 # 运行脚本
-./scripts/pkms-release.sh ./app.apk v1.0.0
+./scripts/pkms-release.sh ./app.apk v1.0.0 my-project my-package
 ```
+
+也可以使用 `.env` 文件管理本地配置：
+
+```bash
+# .env 文件内容
+export RELEASE_URL=https://your-release-system.com/access/release
+export ACCESS_TOKEN=your-token
+export PROJECT_NAME=my-project
+export PACKAGE_NAME=my-package
+```
+
+```bash
+source .env && ./scripts/pkms-release.sh ./app.apk v1.0.0 $PROJECT_NAME $PACKAGE_NAME
+```
+
+> ⚠️ 确保 `.env` 已加入 `.gitignore`，避免 token 泄漏。
 
 ## 功能特性
 
@@ -196,6 +222,7 @@ Error: File 'xxx' not found
 确保文件路径正确且文件存在。
 
 **2. 网络连接失败**
+
 ```
 Upload failed - Network/Connection error
 ```
@@ -222,15 +249,17 @@ set -x  # 显示执行过程
 
 ## 配置文件
 
-可在项目根目录创建 `.env` 文件：
+可在项目根目录创建 `.env` 文件（需加入 `.gitignore`）：
 ```bash
-ACCESS_TOKEN=your-default-token
-RELEASE_URL=https://your-release-system.com/access/release
+export RELEASE_URL=https://your-release-system.com/access/release
+export ACCESS_TOKEN=your-token
+export PROJECT_NAME=my-project
+export PACKAGE_NAME=my-package
 ```
 
 然后使用：
 ```bash
-source .env && ./scripts/pkms-release.sh ./app.apk v1.0.0
+source .env && ./scripts/pkms-release.sh ./app.apk v1.0.0 $PROJECT_NAME $PACKAGE_NAME
 ```
 
 ## 支持和反馈
@@ -240,5 +269,3 @@ source .env && ./scripts/pkms-release.sh ./app.apk v1.0.0
 2. 环境变量是否正确设置  
 3. 文件路径和权限是否正确
 4. 网络连接是否正常
-
-更多技术细节请参考 `CLAUDE.md` 文件。

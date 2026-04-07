@@ -2,8 +2,12 @@ kind: pipeline
 type: docker
 name: pkms-release-test
 
+trigger:
+  event:
+    - tag
+
 steps:
-- name: release-claude-md
+- name: release-test-apk
   image: hao88/pkms-release:latest
   environment:
     ACCESS_TOKEN:
@@ -11,10 +15,4 @@ steps:
     RELEASE_URL:
       from_secret: RELEASE_URL
   commands:
-  # Execute PKMS release with the following parameters:
-  # - /drone/src/CLAUDE.md: Source file path (project documentation)
-  # - ${DRONE_TAG}: Version from Drone CI tag (e.g., v1.0.0)
-  # - CLAUDE-Guide: Artifact name for the release system
-  # - markdown: Target OS/platform identifier
-  # - universal: Architecture type (cross-platform compatible)
-  - pkms-release /drone/src/CLAUDE.md ${DRONE_BUILD_NUMBER} CLAUDE-Guide markdown universal
+  - pkms-release /drone/src/test.apk ${DRONE_TAG} my-project my-package test-apk android universal
